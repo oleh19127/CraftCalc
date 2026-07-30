@@ -11,7 +11,10 @@ namespace CraftCalc.Storage
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=craftcalc.db");
+            string baseDirectory = AppContext.BaseDirectory;
+            string dbPath = Path.Combine(baseDirectory, "craftcalc.db");
+
+            optionsBuilder.UseSqlite($"Data Source={dbPath}");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
