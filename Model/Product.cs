@@ -2,7 +2,7 @@ namespace CraftCalc.Model
 {
     public class Product
     {
-        public Guid Id { get; init; }
+        public Guid Id { get; init; } = Guid.CreateVersion7();
         public string Name { get; set; } = string.Empty;
         public List<UsedMaterial> MaterialsUsed { get; set; } = [];
         public decimal TimeSpent { get; set; }
