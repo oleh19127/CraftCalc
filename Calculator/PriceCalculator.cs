@@ -2,20 +2,17 @@ using CraftCalc.Model;
 
 namespace CraftCalc.Calculator
 {
-    public class PriceCalculator(Product product, List<Material> materials)
+    public class PriceCalculator(Product product)
     {
-        public decimal CalculateSingleMaterialCost(UsedMaterial usedItem)
+        public static decimal CalculateSingleMaterialCost(UsedMaterial usedItem)
         {
-            Material? foundMaterial = materials.FirstOrDefault(m => m.Id == usedItem.MaterialId);
-
-            if (foundMaterial == null || foundMaterial.TotalQuantity == 0)
+            if (usedItem.Material == null || usedItem.Material.TotalQuantity == 0)
             {
                 return 0m;
             }
 
-            decimal costPerUnit = foundMaterial.PackagingCost / foundMaterial.TotalQuantity;
-            decimal finalCostForThisItem = costPerUnit * usedItem.QuantitySpent;
-            return finalCostForThisItem;
+            decimal costPerUnit = usedItem.Material.PackagingCost / usedItem.Material.TotalQuantity;
+            return costPerUnit * usedItem.QuantitySpent;
         }
 
         public decimal CalculateTotalMaterialsCost() =>

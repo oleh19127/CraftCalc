@@ -482,7 +482,7 @@ $RECYCLE.BIN/
 *.swp
 
 # Local storage
-craftcalc_data.json
+craftcalc.db*
 
 # Repomix
 repomix-output.xml

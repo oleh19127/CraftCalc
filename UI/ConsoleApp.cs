@@ -1,732 +1,649 @@
 using CraftCalc.Calculator;
 using CraftCalc.Model;
 using CraftCalc.Storage;
+using Microsoft.EntityFrameworkCore;
 
 namespace CraftCalc.UI
 {
-    public class ConsoleApp(StorageManager storage, List<Material> materials, List<Product> products)
+    public class ConsoleApp(AppDbContext context)
     {
+        private readonly AppDbContext _context = context;
         private bool _isRunning;
+        private bool _returnToMainMenu;
 
         public void Run()
         {
             _isRunning = true;
-
             while (_isRunning)
             {
+                _returnToMainMenu = false;
                 Console.Clear();
-                Console.WriteLine("==========================================");
-                Console.WriteLine(" 🧮 CraftCalc: Калькулятор Хендмейду ");
-                Console.WriteLine("==========================================\n");
-                Console.WriteLine("1. 📦 Управління складом (Матеріали)");
-                Console.WriteLine("2. 💎 Управління каталогом (Вироби)");
-                Console.WriteLine("0. 💾 Зберегти та вийти");
-                Console.Write("\nОберіть розділ (0-2): ");
+                Console.WriteLine(" ==========================================");
+                Console.WriteLine("  🧮 CraftCalc: Калькулятор Хендмейду");
+                Console.WriteLine(" ==========================================\n");
+                Console.WriteLine("  1. 📦 Управління складом (Матеріали)");
+                Console.WriteLine("  2. 💎 Каталог виробів (Кошториси та ціни)");
+                Console.WriteLine("  0. 🚪 Вийти з програми");
+                Console.Write("\n  ➡️ Оберіть розділ (0-2): ");
 
                 string? choice = Console.ReadLine();
                 switch (choice)
                 {
-                    case "1":
-                        MaterialsMenu();
-                        break;
-                    case "2":
-                        ProductsMenu();
-                        break;
-                    case "0":
-                        SaveAndExit();
-                        break;
-                    default:
-                        Console.WriteLine("\n[ПОМИЛКА] Невідома команда.");
-                        WaitForKeyPress();
-                        break;
+                    case "1": MaterialsMenu(); break;
+                    case "2": ProductsMenu(); break;
+                    case "0": _isRunning = false; break;
+                    default: WaitForKeyPress("❌ Невідома команда. Будь ласка, оберіть цифру від 0 до 2."); break;
                 }
             }
-
-            Console.WriteLine("\nДякую за використання програми! До побачення.");
+            Console.WriteLine("\n  Дякую за використання CraftCalc! Творчого натхнення! ✨\n");
         }
-
         private void MaterialsMenu()
         {
-            bool inMaterials = true;
-            while (inMaterials)
+            while (true)
             {
-                Console.Clear();
-                Console.WriteLine("=== 📦 СКЛАД МАТЕРІАЛІВ ===");
-                Console.WriteLine("1. Додати новий матеріал");
-                Console.WriteLine("2. Переглянути залишки на складі");
-                Console.WriteLine("3. Редагувати матеріал");
-                Console.WriteLine("4. Видалити матеріал");
-                Console.WriteLine("0. ⬅️ Повернутися до Головного меню");
-                Console.Write("\nОберіть дію (0-4): ");
+                if (_returnToMainMenu) return;
 
-                string? choice = Console.ReadLine();
-                switch (choice)
+                Console.Clear();
+                Console.WriteLine(" === 📦 СКЛАД МАТЕРІАЛІВ ===\n");
+                Console.WriteLine("  1. ➕ Додати новий матеріал");
+                Console.WriteLine("  2. 📋 Переглянути наявні залишки");
+                Console.WriteLine("  3. ✏️  Редагувати матеріал");
+                Console.WriteLine("  4. ❌ Видалити матеріал");
+                Console.WriteLine("  0. ⬅️ На Головне меню");
+                Console.Write("\n  ➡️ Оберіть дію: ");
+
+                switch (Console.ReadLine())
                 {
-                    case "1": AddMaterial(); WaitForKeyPress(); break;
+                    case "1": AddMaterial(); break;
                     case "2": ShowMaterials(); WaitForKeyPress(); break;
-                    case "3": EditMaterial(); WaitForKeyPress(); break;
-                    case "4": DeleteMaterial(); WaitForKeyPress(); break;
-                    case "0": inMaterials = false; break;
-                    default:
-                        Console.WriteLine("\n[ПОМИЛКА] Невідома команда.");
-                        WaitForKeyPress();
-                        break;
+                    case "3": EditMaterial(); break;
+                    case "4": DeleteMaterial(); break;
+                    case "0": return;
+                    default: WaitForKeyPress("❌ Невідома команда."); break;
                 }
             }
         }
-
         private void ProductsMenu()
         {
-            bool inProducts = true;
-            while (inProducts)
+            while (true)
             {
-                Console.Clear();
-                Console.WriteLine("=== 💎 КАТАЛОГ ВИРОБІВ ===");
-                Console.WriteLine("1. Створити новий виріб (Кошторис)");
-                Console.WriteLine("2. Показати всі вироби (Деталі вартості)");
-                Console.WriteLine("3. Редагувати існуючий виріб");
-                Console.WriteLine("4. Видалити виріб");
-                Console.WriteLine("0. ⬅️ Повернутися до Головного меню");
-                Console.Write("\nОберіть дію (0-4): ");
+                if (_returnToMainMenu) return;
 
-                string? choice = Console.ReadLine();
-                switch (choice)
+                Console.Clear();
+                Console.WriteLine(" === 💎 КАТАЛОГ ВИРОБІВ ===\n");
+                Console.WriteLine("  1. ➕ Створити новий виріб (кошторис)");
+                Console.WriteLine("  2. 📋 Переглянути всі вироби та ціни");
+                Console.WriteLine("  3. ✏️  Редагувати існуючий виріб");
+                Console.WriteLine("  4. ❌ Видалити виріб");
+                Console.WriteLine("  0. ⬅️ На Головне меню");
+                Console.Write("\n  ➡️ Оберіть дію: ");
+
+                switch (Console.ReadLine())
                 {
-                    case "1": CreateProduct(); WaitForKeyPress(); break;
+                    case "1": CreateProduct(); break;
                     case "2": ShowProducts(); WaitForKeyPress(); break;
-                    case "3": EditProduct(); WaitForKeyPress(); break;
-                    case "4": DeleteProduct(); WaitForKeyPress(); break;
-                    case "0": inProducts = false; break;
-                    default:
-                        Console.WriteLine("\n[ПОМИЛКА] Невідома команда.");
-                        WaitForKeyPress();
-                        break;
+                    case "3": EditProduct(); break;
+                    case "4": DeleteProduct(); break;
+                    case "0": return;
+                    default: WaitForKeyPress("❌ Невідома команда."); break;
                 }
             }
         }
-
-        private static void WaitForKeyPress()
+        private static void WaitForKeyPress(string message = "")
         {
-            Console.WriteLine("\nНатисніть Enter для продовження...");
+            if (!string.IsNullOrEmpty(message))
+                Console.WriteLine($"\n  {message}");
+
+            Console.WriteLine("\n  ⌨️  Натисніть Enter, щоб продовжити...");
             Console.ReadLine();
         }
-
-        private static string ChooseUnitOfMeasurement()
+        private static bool ConfirmAction(string prompt)
         {
-            Console.WriteLine("\nОберіть одиницю виміру для цього матеріалу:");
-            Console.WriteLine("1. Грами (г) - для бісеру, глини, тощо");
-            Console.WriteLine("2. Штуки (шт) - для фурнітури, намистин, застібок");
-            Console.WriteLine("3. Метри (м) - для ниток, волосіні, ланцюжків");
-            Console.WriteLine("4. Мілілітри (мл) - для фарби, клею, лаку");
-            Console.WriteLine("5. Сантиметри (см) - для коротких відрізків стрічок");
-            Console.WriteLine("6. ✍️ Ввести свій варіант вручну");
+            Console.WriteLine($"\n  ❓ {prompt}");
+            Console.WriteLine("  1. ✅ Так, підтверджую");
+            Console.WriteLine("  0. ❌ Ні, відмінити операцію");
 
             while (true)
             {
-                int choice = InputValidator.ReadValidInt("Ваш вибір (1-6): ");
-                switch (choice)
-                {
-                    case 1: return "грами";
-                    case 2: return "штуки";
-                    case 3: return "метри";
-                    case 4: return "мілілітри";
-                    case 5: return "сантиметри";
-                    case 6: return InputValidator.ReadValidString("Введіть свою одиницю виміру (наприклад: мотки, пачки): ");
-                    default:
-                        Console.WriteLine("[ПОМИЛКА] Неправильний вибір. Введіть число від 1 до 6.");
-                        break;
-                }
+                string? choice = Console.ReadLine();
+                if (choice == "1") return true;
+                if (choice == "0") return false;
+                Console.Write("  ➡️ Будь ласка, введіть 1 або 0: ");
             }
         }
+        private static string ChooseUnitOfMeasurement()
+        {
+            Console.WriteLine("\n  📏 Оберіть одиницю виміру для матеріалу:");
+            Console.WriteLine("  1. Грами (г)      - бісер, глина, пряжа");
+            Console.WriteLine("  2. Штуки (шт)     - фурнітура, застібки");
+            Console.WriteLine("  3. Метри (м)      - нитки, волосінь, ланцюжки");
+            Console.WriteLine("  4. Мілілітри (мл) - фарба, лак");
+            Console.WriteLine("  5. Сантиметри (см)- стрічки");
+            Console.WriteLine("  6. ✍️  Ввести свій варіант вручну");
 
+            while (true)
+            {
+                int choice = InputValidator.ReadValidInt("\n  ➡️ Ваш вибір (1-6): ");
+                return choice switch
+                {
+                    1 => "г",
+                    2 => "шт",
+                    3 => "м",
+                    4 => "мл",
+                    5 => "см",
+                    6 => InputValidator.ReadValidString("  ➡️ Введіть свою одиницю виміру: "),
+                    _ => throw new Exception("Неправильний вибір.")
+                };
+            }
+        }
         private void AddMaterial()
         {
             Console.Clear();
-            Console.WriteLine("=== ДОДАВАННЯ НОВОГО МАТЕРІАЛУ ===\n");
-
-            string name = InputValidator.ReadValidString("Введіть назву (наприклад, Бісер Miyuki Delica 11/0): ");
-            decimal cost = InputValidator.ReadValidDecimal("Введіть вартість цілої упаковки при покупці (грн): ");
-
-            string unit = ChooseUnitOfMeasurement();
-            decimal quantity = InputValidator.ReadValidDecimal($"Введіть скільки {unit} в одній упаковці (для розрахунку ціни): ");
+            Console.WriteLine(" === ➕ ДОДАВАННЯ НОВОГО МАТЕРІАЛУ ===\n");
 
             Material newMaterial = new()
             {
-                Id = Guid.NewGuid(),
-                Name = name,
-                PackagingCost = cost,
-                TotalQuantity = quantity,
-                AvailableQuantity = quantity,
-                UnitOfMeasurement = unit
+                Name = InputValidator.ReadValidString("  ➡️ Назва (наприклад, Бісер Miyuki Delica): "),
+                PackagingCost = InputValidator.ReadValidDecimal("  ➡️ Вартість цілої упаковки (грн): "),
+                UnitOfMeasurement = ChooseUnitOfMeasurement()
             };
 
-            materials.Add(newMaterial);
-            storage.SaveData(materials, products);
-            Console.WriteLine($"\n✅ Успіх! Матеріал '{newMaterial.Name}' успішно додано на склад.");
-        }
+            decimal quantity = InputValidator.ReadValidDecimal($"  ➡️ Скільки всього ({newMaterial.UnitOfMeasurement}) у цій упаковці: ");
+            newMaterial.TotalQuantity = quantity;
+            newMaterial.AvailableQuantity = quantity;
 
+            if (ConfirmAction($"Зберегти '{newMaterial.Name}' на склад?"))
+            {
+                _context.Materials.Add(newMaterial);
+                _context.SaveChanges();
+                WaitForKeyPress($"✅ Успіх! Матеріал '{newMaterial.Name}' збережено на складі.");
+            }
+            else
+            {
+                WaitForKeyPress("🛑 Операцію скасовано. Матеріал не додано.");
+            }
+        }
         private void ShowMaterials()
         {
             Console.Clear();
-            Console.WriteLine("=== 📦 СТАН СКЛАДУ МАТЕРІАЛІВ ===\n");
+            Console.WriteLine(" === 📋 СТАН СКЛАДУ МАТЕРІАЛІВ ===\n");
 
+            var materials = _context.Materials.AsNoTracking().ToList();
             if (materials.Count == 0)
             {
-                Console.WriteLine("Ваш склад поки що порожній.");
-                Console.WriteLine("Додайте перші матеріали, щоб почати роботу.");
+                Console.WriteLine("  📭 Ваш склад поки що порожній.");
                 return;
             }
 
-            foreach (Material m in materials)
+            foreach (var m in materials)
             {
                 decimal costPerUnit = m.TotalQuantity > 0 ? m.PackagingCost / m.TotalQuantity : 0;
-
-                Console.WriteLine($"> {m.Name}");
-                Console.WriteLine($"  Куплено: {m.TotalQuantity} {m.UnitOfMeasurement} за {m.PackagingCost} грн (Собівартість: {costPerUnit:F2} грн/од)");
+                Console.WriteLine($"  🔹 {m.Name}");
+                Console.WriteLine($"     Собівартість: {costPerUnit:F2} грн / 1 {m.UnitOfMeasurement}");
 
                 if (m.AvailableQuantity <= 0)
-                {
-                    Console.WriteLine($"  ⚠️ В НАЯВНОСТІ: {m.AvailableQuantity} {m.UnitOfMeasurement} (Закінчився!)");
-                }
+                    Console.WriteLine($"     ⚠️ ЗАЛИШОК: {m.AvailableQuantity} {m.UnitOfMeasurement} (Закінчився!)");
                 else
-                {
-                    Console.WriteLine($"  ✅ В НАЯВНОСТІ: {m.AvailableQuantity} {m.UnitOfMeasurement}");
-                }
-                Console.WriteLine("-----------------------------------");
+                    Console.WriteLine($"     ✅ ЗАЛИШОК: {m.AvailableQuantity} {m.UnitOfMeasurement}");
+
+                Console.WriteLine("  -----------------------------------");
             }
         }
-
         private void EditMaterial()
         {
-            Console.Clear();
-            Console.WriteLine("=== РЕДАГУВАННЯ МАТЕРІАЛУ ===\n");
-
-            if (materials.Count == 0)
+            while (true)
             {
-                Console.WriteLine("Ваш склад порожній. Немає що редагувати.");
-                return;
-            }
+                if (_returnToMainMenu) return;
 
-            for (int i = 0; i < materials.Count; i++)
-            {
-                Console.WriteLine($"{i + 1}. {materials[i].Name} (В наявності: {materials[i].AvailableQuantity} {materials[i].UnitOfMeasurement})");
-            }
+                Console.Clear();
+                Console.WriteLine(" === ✏️  ВИБІР МАТЕРІАЛУ ДЛЯ РЕДАГУВАННЯ ===\n");
+                var materials = _context.Materials.ToList();
+                if (materials.Count == 0) { WaitForKeyPress("📭 Склад порожній."); return; }
 
-            int selectedIndex = InputValidator.ReadValidInt("\nВведіть номер матеріалу для редагування (або 0 для відміни): ");
+                for (int i = 0; i < materials.Count; i++)
+                    Console.WriteLine($"  {i + 1}. {materials[i].Name} (Залишок: {materials[i].AvailableQuantity} {materials[i].UnitOfMeasurement})");
 
-            if (selectedIndex > 0 && selectedIndex <= materials.Count)
-            {
-                Material mat = materials[selectedIndex - 1];
-                bool editing = true;
+                Console.WriteLine("\n  0. ⬅️ Назад");
+                Console.WriteLine("  9. 🏠 На Головне меню");
 
-                while (editing)
+                int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть номер матеріалу: ");
+                if (idx == 0) return;
+                if (idx == 9) { _returnToMainMenu = true; return; }
+
+                if (idx > 0 && idx <= materials.Count)
                 {
-                    Console.Clear();
-                    Console.WriteLine($"\n--- ✏️ Редагуємо: {mat.Name} ---");
-                    Console.WriteLine($"1. Назва (Зараз: {mat.Name})");
-                    Console.WriteLine($"2. Вартість упаковки (Зараз: {mat.PackagingCost} грн) - впливає на собівартість");
-                    Console.WriteLine($"3. Одиниця виміру (Зараз: {mat.UnitOfMeasurement})");
-                    Console.WriteLine($"4. Початкова кількість упаковки (Зараз: {mat.TotalQuantity}) - впливає на собівартість");
-                    Console.WriteLine($"5. Поточний залишок на складі (Зараз: {mat.AvailableQuantity})");
-                    Console.WriteLine("0. 💾 Зберегти зміни та вийти");
-                    Console.Write("\nЩо саме ви хочете змінити? (0-5): ");
-
-                    string? choice = Console.ReadLine();
-                    switch (choice)
-                    {
-                        case "1": mat.Name = InputValidator.ReadValidString("Введіть нову назву: "); break;
-                        case "2": mat.PackagingCost = InputValidator.ReadValidDecimal("Введіть нову вартість цілої упаковки (грн): "); break;
-                        case "3": mat.UnitOfMeasurement = ChooseUnitOfMeasurement(); break;
-                        case "4": mat.TotalQuantity = InputValidator.ReadValidDecimal("Введіть нову початкову кількість (для розрахунку ціни): "); break;
-                        case "5": mat.AvailableQuantity = InputValidator.ReadValidDecimal("Введіть новий фактичний залишок на складі: "); break;
-                        case "0": editing = false; break;
-                        default:
-                            Console.WriteLine("[ПОМИЛКА] Невідомий вибір. Натисніть Enter.");
-                            Console.ReadLine();
-                            break;
-                    }
-
-                    storage.SaveData(materials, products);
+                    EditSingleMaterialMenu(materials[idx - 1]);
                 }
-                Console.WriteLine("\n✅ Успіх! Зміни збережено.");
             }
         }
+        private void EditSingleMaterialMenu(Material mat)
+        {
+            while (true)
+            {
+                if (_returnToMainMenu) return;
 
+                Console.Clear();
+                Console.WriteLine($" === ✏️  РЕДАГУВАННЯ: {mat.Name} ===\n");
+                Console.WriteLine($"  1. Назва: {mat.Name}");
+                Console.WriteLine($"  2. Вартість упаковки: {mat.PackagingCost} грн");
+                Console.WriteLine($"  3. Змінити залишок вручну (Зараз: {mat.AvailableQuantity} {mat.UnitOfMeasurement})");
+                Console.WriteLine("\n  0. ⬅️ Назад до списку матеріалів");
+                Console.WriteLine("  9. 🏠 На Головне меню");
+
+                Console.Write("\n  ➡️ Що хочете змінити?: ");
+
+                switch (Console.ReadLine())
+                {
+                    case "1":
+                        mat.Name = InputValidator.ReadValidString("  ➡️ Нова назва: ");
+                        _context.SaveChanges();
+                        break;
+                    case "2":
+                        mat.PackagingCost = InputValidator.ReadValidDecimal("  ➡️ Нова вартість (грн): ");
+                        _context.SaveChanges();
+                        break;
+                    case "3":
+                        Console.WriteLine("\n  ⚠️ УВАГА: зміна залишку тут не впливає на вже створені вироби.");
+                        mat.AvailableQuantity = InputValidator.ReadValidDecimal($"  ➡️ Новий залишок ({mat.UnitOfMeasurement}): ");
+                        _context.SaveChanges();
+                        break;
+                    case "0": return;
+                    case "9": _returnToMainMenu = true; return;
+                    default: WaitForKeyPress("❌ Невідома команда."); break;
+                }
+            }
+        }
         private void DeleteMaterial()
         {
-            Console.Clear();
-            Console.WriteLine("=== ВИДАЛЕННЯ МАТЕРІАЛУ ===\n");
-
-            if (materials.Count == 0)
+            while (true)
             {
-                Console.WriteLine("Ваш склад порожній. Немає що видаляти.");
-                return;
-            }
+                if (_returnToMainMenu) return;
 
-            for (int i = 0; i < materials.Count; i++)
-            {
-                Console.WriteLine($"{i + 1}. {materials[i].Name}");
-            }
+                Console.Clear();
+                Console.WriteLine(" === ❌ ВИДАЛЕННЯ МАТЕРІАЛУ ===\n");
+                var materials = _context.Materials.ToList();
+                if (materials.Count == 0) { WaitForKeyPress("📭 Склад порожній."); return; }
 
-            int selectedIndex = InputValidator.ReadValidInt("\nВведіть номер матеріалу для видалення (або 0 для відміни): ");
+                for (int i = 0; i < materials.Count; i++)
+                    Console.WriteLine($"  {i + 1}. {materials[i].Name}");
 
-            if (selectedIndex > 0 && selectedIndex <= materials.Count)
-            {
-                Material matToDelete = materials[selectedIndex - 1];
+                Console.WriteLine("\n  0. ⬅️ Назад");
+                Console.WriteLine("  9. 🏠 На Головне меню");
 
-                bool isUsedInProducts = products.Any(p => p.MaterialsUsed.Any(um => um.MaterialId == matToDelete.Id));
+                int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть номер для видалення: ");
+                if (idx == 0) return;
+                if (idx == 9) { _returnToMainMenu = true; return; }
 
-                if (isUsedInProducts)
+                if (idx > 0 && idx <= materials.Count)
                 {
-                    Console.WriteLine($"\n❌ [ПОМИЛКА] Неможливо видалити '{matToDelete.Name}'!");
-                    Console.WriteLine("Цей матеріал вже використовується у створених вами виробах.");
-                    Console.WriteLine("Щоб його видалити, спочатку потрібно видалити виріб, який містить цей матеріал.");
-                }
-                else
-                {
-                    materials.Remove(matToDelete);
-                    storage.SaveData(materials, products);
-                    Console.WriteLine($"\n✅ Успіх! Матеріал '{matToDelete.Name}' назавжди видалено зі складу.");
+                    var mat = materials[idx - 1];
+                    bool isUsed = _context.UsedMaterials.Any(um => um.MaterialId == mat.Id);
+
+                    if (isUsed)
+                    {
+                        WaitForKeyPress($"❌ Неможливо видалити '{mat.Name}'.\n  Він використовується у виробах! Спочатку видаліть його з виробів.");
+                    }
+                    else
+                    {
+                        if (ConfirmAction($"Ви дійсно хочете назавжди видалити '{mat.Name}'?"))
+                        {
+                            _context.Materials.Remove(mat);
+                            _context.SaveChanges();
+                            WaitForKeyPress($"✅ Матеріал '{mat.Name}' успішно видалено.");
+                        }
+                    }
                 }
             }
         }
-
         private void CreateProduct()
         {
             Console.Clear();
-            Console.WriteLine("=== СТВОРЕННЯ НОВОГО ВИРОБУ ===\n");
+            Console.WriteLine(" === ➕ СТВОРЕННЯ НОВОГО ВИРОБУ ===\n");
 
-            if (materials.Count == 0)
+            if (!_context.Materials.Any(m => m.AvailableQuantity > 0))
             {
-                Console.WriteLine("❌ Помилка: На складі немає матеріалів!");
-                Console.WriteLine("Спочатку додайте матеріали через меню Складу.");
+                WaitForKeyPress("❌ На складі немає матеріалів. Спочатку додайте їх у розділі 'Склад'!");
                 return;
             }
-
-            string productName = InputValidator.ReadValidString("Введіть назву виробу (наприклад, Силянка на зав'язках): ");
-            decimal timeSpent = InputValidator.ReadValidDecimal("Скільки годин ви витратили на роботу? (наприклад, 2.5): ");
-            decimal hourlyRate = InputValidator.ReadValidDecimal("Яка ваша ставка за годину роботи? (грн): ");
-
-            decimal markupUAH = InputValidator.ReadValidDecimal("Введіть додаткову націнку у гривнях (пакування, тощо) або 0: ");
-            decimal markupPercent = InputValidator.ReadValidDecimal("Введіть додаткову націнку у відсотках % (податок, маржа) або 0: ");
 
             Product newProduct = new()
             {
-                Id = Guid.NewGuid(),
-                Name = productName,
-                TimeSpent = timeSpent,
-                CostOfAnHourOfWork = hourlyRate,
-                MarkUp = markupUAH,
-                MarkUpPercentage = markupPercent
+                Name = InputValidator.ReadValidString("  ➡️ Назва виробу: "),
+                TimeSpent = InputValidator.ReadValidDecimal("  ➡️ Витрачено годин на роботу: "),
+                CostOfAnHourOfWork = InputValidator.ReadValidDecimal("  ➡️ Ставка за годину (грн): "),
+                MarkUp = InputValidator.ReadValidDecimal("  ➡️ Фіксована націнка (пакування тощо, грн): "),
+                MarkUpPercentage = InputValidator.ReadValidDecimal("  ➡️ Відсоткова націнка (% маржа): ")
             };
 
-            bool addingMaterials = true;
-            while (addingMaterials)
+            if (!ConfirmAction("Зберегти основу виробу та перейти до додавання матеріалів?"))
             {
-                List<Material> availableMaterials = [.. materials.Where(m => m.AvailableQuantity > 0)];
-
-                if (availableMaterials.Count == 0)
-                {
-                    Console.WriteLine("\nℹ️ На складі закінчилися доступні матеріали!");
-                    break;
-                }
-
-                Console.WriteLine("\n--- ДОДАВАННЯ МАТЕРІАЛІВ У ВИРІБ ---");
-                Console.WriteLine("Ось що є на складі (доступно для вибору):");
-
-                for (int i = 0; i < availableMaterials.Count; i++)
-                {
-                    var mat = availableMaterials[i];
-                    var existingUsage = newProduct.MaterialsUsed.FirstOrDefault(um => um.MaterialId == mat.Id);
-
-                    if (existingUsage != null)
-                    {
-                        Console.WriteLine($"{i + 1}. {mat.Name} (В наявності: {mat.AvailableQuantity} {mat.UnitOfMeasurement})  [Вже додано: {existingUsage.QuantitySpent}]");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{i + 1}. {mat.Name} (В наявності: {mat.AvailableQuantity} {mat.UnitOfMeasurement})");
-                    }
-                }
-                Console.WriteLine("0. Завершити додавання матеріалів і розрахувати вартість");
-
-                int selectedIndex = InputValidator.ReadValidInt("\nВведіть номер матеріалу (або 0 для завершення): ");
-
-                if (selectedIndex == 0)
-                {
-                    addingMaterials = false;
-                }
-                else if (selectedIndex > 0 && selectedIndex <= availableMaterials.Count)
-                {
-                    Material selectedMaterial = availableMaterials[selectedIndex - 1];
-
-                    decimal quantitySpent = 0;
-                    while (true)
-                    {
-                        quantitySpent = InputValidator.ReadValidDecimal($"Скільки '{selectedMaterial.Name}' ви витратили? (Максимум {selectedMaterial.AvailableQuantity} {selectedMaterial.UnitOfMeasurement}): ");
-                        if (quantitySpent <= selectedMaterial.AvailableQuantity)
-                        {
-                            break;
-                        }
-                        Console.WriteLine($"\n❌ [ПОМИЛКА] У вас немає стільки матеріалу на складі! В наявності лише {selectedMaterial.AvailableQuantity}.");
-                    }
-
-                    var existingItem = newProduct.MaterialsUsed.FirstOrDefault(um => um.MaterialId == selectedMaterial.Id);
-
-                    if (existingItem != null)
-                    {
-                        existingItem.QuantitySpent += quantitySpent;
-                    }
-                    else
-                    {
-                        newProduct.MaterialsUsed.Add(new UsedMaterial
-                        {
-                            MaterialId = selectedMaterial.Id,
-                            QuantitySpent = quantitySpent
-                        });
-                    }
-
-                    selectedMaterial.AvailableQuantity -= quantitySpent;
-                    Console.WriteLine("✅ Матеріал успішно додано до виробу, а залишки на складі оновлено!");
-                }
-                else
-                {
-                    Console.WriteLine("❌ Неправильний номер. Спробуйте ще раз.");
-                }
-            }
-
-            PriceCalculator calc = new(newProduct, materials);
-            decimal finalPrice = calc.CalculateFinalPrice();
-
-            products.Add(newProduct);
-
-            storage.SaveData(materials, products);
-
-            Console.WriteLine($"\n✅ Успіх! Виріб '{newProduct.Name}' успішно створено.");
-            Console.WriteLine($"💰 Рекомендована ціна для продажу: {finalPrice:F2} грн");
-        }
-
-        private void ShowProducts()
-        {
-            Console.Clear();
-            Console.WriteLine("=== 💎 КАТАЛОГ ВАШИХ ВИРОБІВ (ДЕТАЛЬНИЙ КОШТОРИС) ===\n");
-
-            if (products.Count == 0)
-            {
-                Console.WriteLine("Ви ще не створили жодного виробу.");
-                Console.WriteLine("Перейдіть до меню створення виробів, щоб додати першу роботу.");
+                WaitForKeyPress("🛑 Створення виробу скасовано.");
                 return;
             }
 
-            foreach (Product p in products)
+            _context.Products.Add(newProduct);
+            _context.SaveChanges();
+
+            AddMaterialsToProductLoop(newProduct);
+
+            var savedProduct = _context.Products
+                .Include(p => p.MaterialsUsed).ThenInclude(um => um.Material)
+                .First(p => p.Id == newProduct.Id);
+
+            PriceCalculator calc = new(savedProduct);
+            Console.WriteLine($"\n  ✅ Виріб '{savedProduct.Name}' успішно створено та укомплектовано!");
+            WaitForKeyPress($"  💰 Рекомендована ціна продажу: {calc.CalculateFinalPrice():F2} грн");
+        }
+        private void AddMaterialsToProductLoop(Product product)
+        {
+            while (true)
             {
-                PriceCalculator productCalculator = new(p, materials);
+                Console.Clear();
+                Console.WriteLine($" --- 🧩 ДОДАВАННЯ МАТЕРІАЛІВ ДО: {product.Name} ---\n");
 
-                decimal finalPrice = productCalculator.CalculateFinalPrice();
-                decimal totalMaterialsCost = productCalculator.CalculateTotalMaterialsCost();
-                decimal workTimeCost = productCalculator.CalculateWorkTime();
-
-                Console.WriteLine($"\n> Виріб: {p.Name}");
-                Console.WriteLine("  [Склад матеріалів]:");
-
-                if (p.MaterialsUsed.Count == 0)
+                var usedItems = _context.UsedMaterials.Include(um => um.Material).Where(um => um.ProductId == product.Id).ToList();
+                if (usedItems.Count != 0)
                 {
-                    Console.WriteLine("    Матеріали не додано.");
+                    Console.WriteLine("  📥 Вже додано до виробу:");
+                    foreach (var ui in usedItems)
+                        Console.WriteLine($"    - {ui.Material?.Name}: {ui.QuantitySpent} {ui.Material?.UnitOfMeasurement}");
+                    Console.WriteLine();
                 }
-                else
-                {
-                    foreach (UsedMaterial um in p.MaterialsUsed)
-                    {
-                        Material? mat = materials.FirstOrDefault(m => m.Id == um.MaterialId);
 
-                        if (mat != null)
+                var availableMats = _context.Materials.Where(m => m.AvailableQuantity > 0).ToList();
+                if (availableMats.Count == 0)
+                {
+                    WaitForKeyPress("⚠️ Більше немає доступних матеріалів на складі.");
+                    return;
+                }
+
+                Console.WriteLine("  📦 Доступні на складі:");
+                for (int i = 0; i < availableMats.Count; i++)
+                    Console.WriteLine($"  {i + 1}. {availableMats[i].Name} (Є: {availableMats[i].AvailableQuantity} {availableMats[i].UnitOfMeasurement})");
+
+                Console.WriteLine("\n  0. ⬅️ Завершити додавання матеріалів");
+
+                int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть номер матеріалу (або 0 для завершення): ");
+                if (idx == 0) return;
+
+                if (idx > 0 && idx <= availableMats.Count)
+                {
+                    var mat = availableMats[idx - 1];
+                    decimal qty = InputValidator.ReadValidDecimal($"  ➡️ Скільки витрачено? (Макс {mat.AvailableQuantity} {mat.UnitOfMeasurement}): ");
+
+                    if (qty <= 0) continue;
+
+                    if (qty <= mat.AvailableQuantity)
+                    {
+                        var existingUse = usedItems.FirstOrDefault(u => u.MaterialId == mat.Id);
+                        if (existingUse != null)
                         {
-                            decimal itemCost = productCalculator.CalculateSingleMaterialCost(um);
-                            Console.WriteLine($"    - {mat.Name}: витрачено {um.QuantitySpent} {mat.UnitOfMeasurement}. (Собівартість: {itemCost:F2} грн)");
+                            existingUse.QuantitySpent += qty;
                         }
                         else
                         {
-                            Console.WriteLine($"    - [Матеріал був видалений зі складу]: {um.QuantitySpent} од.");
+                            _context.UsedMaterials.Add(new UsedMaterial { ProductId = product.Id, MaterialId = mat.Id, QuantitySpent = qty });
                         }
+
+                        mat.AvailableQuantity -= qty;
+                        _context.SaveChanges();
+
+                        Console.WriteLine($"\n  ✅ Успіх! Додано {qty} {mat.UnitOfMeasurement} '{mat.Name}'. Залишок на складі оновлено.");
+                        Thread.Sleep(1500);
+                    }
+                    else
+                    {
+                        WaitForKeyPress($"❌ Помилка: На складі лише {mat.AvailableQuantity} {mat.UnitOfMeasurement}, а ви намагаєтесь списати {qty}.");
                     }
                 }
-
-                Console.WriteLine($"  ---------------------------------");
-                Console.WriteLine($"  Загальна вартість матеріалів: {totalMaterialsCost:F2} грн");
-                Console.WriteLine($"  Оплата роботи ({p.TimeSpent} год по {p.CostOfAnHourOfWork} грн/год): {workTimeCost:F2} грн");
-
-                if (p.MarkUp > 0)
-                {
-                    Console.WriteLine($"  Додаткова націнка (фіксована): {p.MarkUp:F2} грн");
-                }
-                if (p.MarkUpPercentage > 0)
-                {
-                    Console.WriteLine($"  Додаткова націнка (відсоток): {p.MarkUpPercentage:F2} %");
-                }
-
-                Console.WriteLine($"  => 💰 ФІНАЛЬНА ЦІНА ДЛЯ КЛІЄНТА: {finalPrice:F2} грн");
-                Console.WriteLine("===================================");
             }
         }
-
-        private void EditProduct()
+        private void ShowProducts()
         {
             Console.Clear();
-            Console.WriteLine("=== РЕДАГУВАННЯ ВИРОБУ ===\n");
+            Console.WriteLine(" === 📋 КАТАЛОГ ВАШИХ ВИРОБІВ ===\n");
+
+            var products = _context.Products.AsNoTracking()
+                .Include(p => p.MaterialsUsed).ThenInclude(um => um.Material)
+                .ToList();
 
             if (products.Count == 0)
             {
-                Console.WriteLine("Ваш каталог виробів порожній.");
+                Console.WriteLine("  📭 Каталог порожній.");
                 return;
             }
 
-            for (int i = 0; i < products.Count; i++)
+            foreach (var p in products)
             {
-                Console.WriteLine($"{i + 1}. {products[i].Name}");
-            }
+                PriceCalculator calc = new(p);
+                Console.WriteLine($"  💎 Виріб: {p.Name}");
+                Console.WriteLine("     [Склад]:");
 
-            int selectedIndex = InputValidator.ReadValidInt("\nВведіть номер виробу для редагування (або 0 для відміни): ");
-
-            if (selectedIndex > 0 && selectedIndex <= products.Count)
-            {
-                Product prod = products[selectedIndex - 1];
-                bool editing = true;
-
-                while (editing)
+                if (p.MaterialsUsed.Count == 0)
                 {
-                    Console.Clear();
-                    Console.WriteLine($"\n--- ✏️ Редагуємо виріб: {prod.Name} ---");
-                    Console.WriteLine($"1. Назва (Зараз: {prod.Name})");
-                    Console.WriteLine($"2. Витрачений час (Зараз: {prod.TimeSpent} год)");
-                    Console.WriteLine($"3. Вартість години роботи (Зараз: {prod.CostOfAnHourOfWork} грн)");
-                    Console.WriteLine($"4. Фіксована націнка (Зараз: {prod.MarkUp} грн)");
-                    Console.WriteLine($"5. Націнка у відсотках (Зараз: {prod.MarkUpPercentage} %)");
-                    Console.WriteLine($"6. 📦 [Керування матеріалами] (Матеріалів у виробі: {prod.MaterialsUsed.Count})");
-                    Console.WriteLine("0. 💾 Зберегти зміни та вийти");
-                    Console.Write("\nЩо саме ви хочете змінити? (0-6): ");
-
-                    string? choice = Console.ReadLine();
-                    switch (choice)
-                    {
-                        case "1": prod.Name = InputValidator.ReadValidString("Введіть нову назву: "); break;
-                        case "2": prod.TimeSpent = InputValidator.ReadValidDecimal("Введіть новий час роботи: "); break;
-                        case "3": prod.CostOfAnHourOfWork = InputValidator.ReadValidDecimal("Введіть нову вартість години роботи (грн): "); break;
-                        case "4": prod.MarkUp = InputValidator.ReadValidDecimal("Введіть нову фіксовану націнку (грн): "); break;
-                        case "5": prod.MarkUpPercentage = InputValidator.ReadValidDecimal("Введіть нову націнку у відсотках (%): "); break;
-                        case "6": ManageProductMaterials(prod); break;
-                        case "0": editing = false; break;
-                        default:
-                            Console.WriteLine("[ПОМИЛКА] Невідомий вибір. Натисніть Enter.");
-                            Console.ReadLine();
-                            break;
-                    }
-
-                    storage.SaveData(materials, products);
-                }
-                Console.WriteLine("\n✅ Успіх! Зміни збережено. Кошторис автоматично перераховано.");
-            }
-        }
-
-        private void ManageProductMaterials(Product prod)
-        {
-            bool managing = true;
-            while (managing)
-            {
-                Console.Clear();
-                Console.WriteLine($"\n--- 📦 СКЛАД МАТЕРІАЛІВ У ВИРОБІ: {prod.Name} ---");
-
-                if (prod.MaterialsUsed.Count == 0)
-                {
-                    Console.WriteLine("Матеріалів поки не додано.");
+                    Console.WriteLine("       Матеріали не вказані.");
                 }
                 else
                 {
-                    for (int i = 0; i < prod.MaterialsUsed.Count; i++)
+                    foreach (var um in p.MaterialsUsed)
                     {
-                        var um = prod.MaterialsUsed[i];
-                        Material? mat = materials.FirstOrDefault(m => m.Id == um.MaterialId);
-                        string matName = mat != null ? mat.Name : "[Видалений зі складу]";
-                        string matUnit = mat != null ? mat.UnitOfMeasurement : "од.";
-
-                        Console.WriteLine($"{i + 1}. {matName} — {um.QuantitySpent} {matUnit}");
+                        string matName = um.Material?.Name ?? "[Видалено]";
+                        string unit = um.Material?.UnitOfMeasurement ?? "од.";
+                        decimal cost = PriceCalculator.CalculateSingleMaterialCost(um);
+                        Console.WriteLine($"       - {matName}: {um.QuantitySpent} {unit} ({cost:F2} грн)");
                     }
                 }
 
-                Console.WriteLine("\n1. ➕ Додати новий матеріал зі складу (або збільшити кількість)");
-                Console.WriteLine("2. ✏️ Змінити кількість використаного матеріалу");
-                Console.WriteLine("3. ❌ Видалити матеріал з виробу (повернеться на склад)");
-                Console.WriteLine("0. ⬅️ Назад до меню виробу");
-                Console.Write("\nВаш вибір (0-3): ");
+                Console.WriteLine($"     ---------------------------------");
+                Console.WriteLine($"     Матеріали: {calc.CalculateTotalMaterialsCost():F2} грн");
+                Console.WriteLine($"     Робота ({p.TimeSpent} год): {calc.CalculateWorkTime():F2} грн");
+                Console.WriteLine($"     Націнки: {p.MarkUp} грн | {p.MarkUpPercentage}%");
+                Console.WriteLine($"     => 💰 ФІНАЛЬНА ЦІНА: {calc.CalculateFinalPrice():F2} грн\n");
+            }
+        }
+        private void EditProduct()
+        {
+            while (true)
+            {
+                if (_returnToMainMenu) return;
 
-                string? choice = Console.ReadLine();
-                switch (choice)
+                Console.Clear();
+                Console.WriteLine(" === ✏️  ВИБІР ВИРОБУ ДЛЯ РЕДАГУВАННЯ ===\n");
+                var products = _context.Products.Include(p => p.MaterialsUsed).ToList();
+
+                if (products.Count == 0) { WaitForKeyPress("📭 Каталог порожній."); return; }
+
+                for (int i = 0; i < products.Count; i++)
+                    Console.WriteLine($"  {i + 1}. {products[i].Name}");
+
+                Console.WriteLine("\n  0. ⬅️ Назад");
+                Console.WriteLine("  9. 🏠 На Головне меню");
+
+                int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть виріб: ");
+                if (idx == 0) return;
+                if (idx == 9) { _returnToMainMenu = true; return; }
+
+                if (idx > 0 && idx <= products.Count)
                 {
-                    case "1":
-                        List<Material> available = [.. materials.Where(m => m.AvailableQuantity > 0)];
-                        if (available.Count == 0)
-                        {
-                            Console.WriteLine("\nℹ️ На складі закінчилися матеріали.");
-                            WaitForKeyPress();
-                            break;
-                        }
-
-                        Console.WriteLine("\nДоступні матеріали на складі:");
-                        for (int i = 0; i < available.Count; i++)
-                        {
-                            var mat = available[i];
-                            var existingUsage = prod.MaterialsUsed.FirstOrDefault(um => um.MaterialId == mat.Id);
-
-                            if (existingUsage != null)
-                            {
-                                Console.WriteLine($"{i + 1}. {mat.Name} (В наявності: {mat.AvailableQuantity})  [Вже у виробі: {existingUsage.QuantitySpent}]");
-                            }
-                            else
-                            {
-                                Console.WriteLine($"{i + 1}. {mat.Name} (В наявності: {mat.AvailableQuantity})");
-                            }
-                        }
-
-                        int addIdx = InputValidator.ReadValidInt("\nВведіть номер матеріалу для додавання (або 0 для відміни): ");
-                        if (addIdx > 0 && addIdx <= available.Count)
-                        {
-                            Material selected = available[addIdx - 1];
-
-                            decimal qty = 0;
-                            while (true)
-                            {
-                                qty = InputValidator.ReadValidDecimal($"Скільки '{selected.Name}' ви використали? (Максимум {selected.AvailableQuantity}): ");
-                                if (qty <= selected.AvailableQuantity) break;
-                                Console.WriteLine($"❌ [ПОМИЛКА] В наявності лише {selected.AvailableQuantity}.");
-                            }
-
-                            var existingItem = prod.MaterialsUsed.FirstOrDefault(um => um.MaterialId == selected.Id);
-                            if (existingItem != null)
-                            {
-                                existingItem.QuantitySpent += qty;
-                            }
-                            else
-                            {
-                                prod.MaterialsUsed.Add(new UsedMaterial { MaterialId = selected.Id, QuantitySpent = qty });
-                            }
-
-                            selected.AvailableQuantity -= qty;
-                            storage.SaveData(materials, products);
-                            Console.WriteLine("✅ Матеріал успішно додано (або збільшено його кількість)!");
-                            WaitForKeyPress();
-                        }
-                        break;
-
-                    case "2":
-                        if (prod.MaterialsUsed.Count == 0) break;
-                        int editIdx = InputValidator.ReadValidInt("Введіть номер матеріалу зі списку вище (або 0): ");
-                        if (editIdx > 0 && editIdx <= prod.MaterialsUsed.Count)
-                        {
-                            var selectedUm = prod.MaterialsUsed[editIdx - 1];
-                            Material? mat = materials.FirstOrDefault(m => m.Id == selectedUm.MaterialId);
-
-                            if (mat == null)
-                            {
-                                Console.WriteLine("❌ Матеріал не знайдено на складі. Зміна неможлива.");
-                                WaitForKeyPress();
-                                break;
-                            }
-
-                            decimal newQty = 0;
-                            while (true)
-                            {
-                                newQty = InputValidator.ReadValidDecimal($"Введіть нову кількість (було {selectedUm.QuantitySpent}, доступно ще {mat.AvailableQuantity} на складі): ");
-                                decimal difference = newQty - selectedUm.QuantitySpent;
-
-                                if (difference > mat.AvailableQuantity)
-                                {
-                                    Console.WriteLine($"❌ [ПОМИЛКА] Недостатньо матеріалу на складі для такого збільшення! Ви можете додати максимум ще {mat.AvailableQuantity}.");
-                                }
-                                else
-                                {
-                                    mat.AvailableQuantity -= difference;
-                                    selectedUm.QuantitySpent = newQty;
-                                    storage.SaveData(materials, products);
-                                    Console.WriteLine("✅ Кількість успішно змінено!");
-                                    WaitForKeyPress();
-                                    break;
-                                }
-                            }
-                        }
-                        break;
-
-                    case "3":
-                        if (prod.MaterialsUsed.Count == 0) break;
-                        int delIdx = InputValidator.ReadValidInt("Введіть номер матеріалу для ВИДАЛЕННЯ з виробу (або 0): ");
-                        if (delIdx > 0 && delIdx <= prod.MaterialsUsed.Count)
-                        {
-                            var umToRemove = prod.MaterialsUsed[delIdx - 1];
-                            Material? matToRestore = materials.FirstOrDefault(m => m.Id == umToRemove.MaterialId);
-
-                            if (matToRestore != null)
-                            {
-                                matToRestore.AvailableQuantity += umToRemove.QuantitySpent;
-                                storage.SaveData(materials, products);
-                            }
-
-                            prod.MaterialsUsed.RemoveAt(delIdx - 1);
-                            Console.WriteLine("✅ Матеріал видалено з виробу, залишки повернуто на склад.");
-                            WaitForKeyPress();
-                        }
-                        break;
-
-                    case "0":
-                        managing = false;
-                        break;
+                    EditSingleProductMenu(products[idx - 1]);
                 }
             }
         }
-
-        private void DeleteProduct()
+        private void EditSingleProductMenu(Product prod)
         {
-            Console.Clear();
-            Console.WriteLine("=== ВИДАЛЕННЯ ВИРОБУ ===\n");
-
-            if (products.Count == 0)
+            while (true)
             {
-                Console.WriteLine("Ваш каталог виробів порожній. Немає що видаляти.");
+                if (_returnToMainMenu) return;
+
+                Console.Clear();
+
+                var freshProd = _context.Products
+                    .Include(p => p.MaterialsUsed).ThenInclude(m => m.Material)
+                    .First(p => p.Id == prod.Id);
+
+                PriceCalculator calc = new(freshProd);
+
+                Console.WriteLine($" === ✏️  РЕДАГУВАННЯ: {freshProd.Name} ===");
+                Console.WriteLine($"  💰 Поточна ціна: {calc.CalculateFinalPrice():F2} грн\n");
+
+                Console.WriteLine($"  1. Назва: {freshProd.Name}");
+                Console.WriteLine($"  2. Витрачений час: {freshProd.TimeSpent} год");
+                Console.WriteLine($"  3. Ставка за годину: {freshProd.CostOfAnHourOfWork} грн");
+                Console.WriteLine($"  4. Фіксована націнка: {freshProd.MarkUp} грн");
+                Console.WriteLine($"  5. Відсоткова націнка: {freshProd.MarkUpPercentage}%");
+                Console.WriteLine($"  --- Робота з матеріалами виробу ---");
+                Console.WriteLine($"  6. ➕ Додати новий матеріал");
+                Console.WriteLine($"  7. 🔄 Змінити кількість матеріалу");
+                Console.WriteLine($"  8. ❌ Видалити матеріал з виробу");
+                Console.WriteLine("\n  0. ⬅️ Назад до списку виробів");
+                Console.WriteLine("  9. 🏠 На Головне меню");
+
+                Console.Write("\n  ➡️ Що хочете змінити?: ");
+
+                switch (Console.ReadLine())
+                {
+                    case "1": freshProd.Name = InputValidator.ReadValidString("  ➡️ Нова назва: "); _context.SaveChanges(); break;
+                    case "2": freshProd.TimeSpent = InputValidator.ReadValidDecimal("  ➡️ Новий час (год): "); _context.SaveChanges(); break;
+                    case "3": freshProd.CostOfAnHourOfWork = InputValidator.ReadValidDecimal("  ➡️ Нова ставка (грн): "); _context.SaveChanges(); break;
+                    case "4": freshProd.MarkUp = InputValidator.ReadValidDecimal("  ➡️ Нова націнка (грн): "); _context.SaveChanges(); break;
+                    case "5": freshProd.MarkUpPercentage = InputValidator.ReadValidDecimal("  ➡️ Нова націнка (%): "); _context.SaveChanges(); break;
+                    case "6": AddMaterialsToProductLoop(freshProd); break;
+                    case "7": EditMaterialQuantityInProduct(freshProd); break;
+                    case "8": RemoveMaterialFromProduct(freshProd); break;
+                    case "0": return;
+                    case "9": _returnToMainMenu = true; return;
+                    default: WaitForKeyPress("❌ Невідома команда."); break;
+                }
+            }
+        }
+        private void EditMaterialQuantityInProduct(Product product)
+        {
+            if (product.MaterialsUsed.Count == 0)
+            {
+                WaitForKeyPress("У цьому виробі ще немає матеріалів.");
                 return;
             }
 
-            for (int i = 0; i < products.Count; i++)
+            Console.Clear();
+            Console.WriteLine($" --- 🔄 ЗМІНА КІЛЬКОСТІ МАТЕРІАЛУ У '{product.Name}' ---\n");
+            for (int i = 0; i < product.MaterialsUsed.Count; i++)
             {
-                Console.WriteLine($"{i + 1}. {products[i].Name}");
+                var um = product.MaterialsUsed[i];
+                Console.WriteLine($"  {i + 1}. {um.Material?.Name} (Зараз використано: {um.QuantitySpent} {um.Material?.UnitOfMeasurement})");
             }
 
-            int selectedIndex = InputValidator.ReadValidInt("\nВведіть номер виробу для видалення (або 0 для відміни): ");
-
-            if (selectedIndex > 0 && selectedIndex <= products.Count)
+            int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть номер матеріалу (0 для відміни): ");
+            if (idx > 0 && idx <= product.MaterialsUsed.Count)
             {
-                Product productToDelete = products[selectedIndex - 1];
+                var usedItem = product.MaterialsUsed[idx - 1];
+                var dbMaterial = _context.Materials.Find(usedItem.MaterialId);
+                if (dbMaterial == null) return;
 
-                foreach (var um in productToDelete.MaterialsUsed)
+                Console.WriteLine($"\n  📊 СТАТИСТИКА:");
+                Console.WriteLine($"  - Вже використано у виробі: {usedItem.QuantitySpent} {dbMaterial.UnitOfMeasurement}");
+                Console.WriteLine($"  - Вільно лежить на складі:  {dbMaterial.AvailableQuantity} {dbMaterial.UnitOfMeasurement}");
+
+                decimal newQty = InputValidator.ReadValidDecimal("\n  ➡️ Введіть НОВУ ЗАГАЛЬНУ кількість для цього виробу: ");
+
+                if (newQty == usedItem.QuantitySpent) return;
+
+                decimal difference = newQty - usedItem.QuantitySpent;
+
+                if (difference > 0)
                 {
-                    Material? mat = materials.FirstOrDefault(m => m.Id == um.MaterialId);
-                    if (mat != null)
+                    if (dbMaterial.AvailableQuantity >= difference)
                     {
-                        mat.AvailableQuantity += um.QuantitySpent;
+                        dbMaterial.AvailableQuantity -= difference;
+                        usedItem.QuantitySpent = newQty;
+                        _context.SaveChanges();
+                        WaitForKeyPress($"✅ Успіх! Додано ще {difference} {dbMaterial.UnitOfMeasurement}. Залишки на складі оновлено.");
+                    }
+                    else
+                    {
+                        WaitForKeyPress($"❌ ПОМИЛКА: Не вистачає на складі!\n  Вам потрібно ще {difference} {dbMaterial.UnitOfMeasurement}, а є лише {dbMaterial.AvailableQuantity}.");
                     }
                 }
-
-                products.Remove(productToDelete);
-
-                storage.SaveData(materials, products);
-
-                Console.WriteLine($"\n✅ Успіх! Виріб '{productToDelete.Name}' назавжди видалено з каталогу.");
-                Console.WriteLine("Усі матеріали, які були витрачені на цей виріб, успішно повернені на склад.");
+                else
+                {
+                    decimal amountToReturn = Math.Abs(difference);
+                    dbMaterial.AvailableQuantity += amountToReturn;
+                    usedItem.QuantitySpent = newQty;
+                    _context.SaveChanges();
+                    WaitForKeyPress($"✅ Успіх! Зменшено кількість. На склад повернуто {amountToReturn} {dbMaterial.UnitOfMeasurement}.");
+                }
             }
         }
-
-        private void SaveAndExit()
+        private void RemoveMaterialFromProduct(Product product)
         {
+            if (product.MaterialsUsed.Count == 0)
+            {
+                WaitForKeyPress("У цьому виробі немає доданих матеріалів.");
+                return;
+            }
+
             Console.Clear();
-            Console.WriteLine("💾 Збереження даних...");
-            storage.SaveData(materials, products);
-            _isRunning = false;
+            Console.WriteLine($" --- ❌ ВИДАЛЕННЯ МАТЕРІАЛУ З '{product.Name}' ---\n");
+            for (int i = 0; i < product.MaterialsUsed.Count; i++)
+            {
+                var um = product.MaterialsUsed[i];
+                Console.WriteLine($"  {i + 1}. {um.Material?.Name} ({um.QuantitySpent} {um.Material?.UnitOfMeasurement})");
+            }
+
+            int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть номер для видалення (0 для відміни): ");
+            if (idx > 0 && idx <= product.MaterialsUsed.Count)
+            {
+                var usedItem = product.MaterialsUsed[idx - 1];
+                var dbMaterial = _context.Materials.Find(usedItem.MaterialId);
+
+                if (ConfirmAction($"Видалити '{dbMaterial?.Name}' з цього виробу?"))
+                {
+                    dbMaterial?.AvailableQuantity += usedItem.QuantitySpent;
+
+                    _context.UsedMaterials.Remove(usedItem);
+                    _context.SaveChanges();
+                    WaitForKeyPress("✅ Матеріал видалено з виробу, залишки успішно повернуто на склад.");
+                }
+            }
+        }
+        private void DeleteProduct()
+        {
+            while (true)
+            {
+                if (_returnToMainMenu) return;
+
+                Console.Clear();
+                Console.WriteLine(" === ❌ ВИДАЛЕННЯ ВИРОБУ ===\n");
+                var products = _context.Products.Include(p => p.MaterialsUsed).ToList();
+
+                if (products.Count == 0) { WaitForKeyPress("📭 Каталог порожній."); return; }
+
+                for (int i = 0; i < products.Count; i++)
+                    Console.WriteLine($"  {i + 1}. {products[i].Name}");
+
+                Console.WriteLine("\n  0. ⬅️ Назад");
+                Console.WriteLine("  9. 🏠 На Головне меню");
+
+                int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть виріб для видалення: ");
+                if (idx == 0) return;
+                if (idx == 9) { _returnToMainMenu = true; return; }
+
+                if (idx > 0 && idx <= products.Count)
+                {
+                    var product = products[idx - 1];
+
+                    if (ConfirmAction($"Ви дійсно хочете видалити виріб '{product.Name}'?\n  Усі витрачені матеріали будуть автоматично повернуті на склад."))
+                    {
+                        foreach (var um in product.MaterialsUsed)
+                        {
+                            var mat = _context.Materials.Find(um.MaterialId);
+                            mat?.AvailableQuantity += um.QuantitySpent;
+                        }
+                        _context.Products.Remove(product);
+                        _context.SaveChanges();
+                        WaitForKeyPress($"✅ Виріб '{product.Name}' успішно видалено. Матеріали повернено.");
+                    }
+                }
+            }
         }
     }
 }
