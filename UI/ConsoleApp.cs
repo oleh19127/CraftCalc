@@ -24,7 +24,7 @@ namespace CraftCalc.UI
                 Console.WriteLine("  1. 📦 Управління складом (Матеріали)");
                 Console.WriteLine("  2. 💎 Каталог виробів (Кошториси та ціни)");
                 Console.WriteLine("  0. 🚪 Вийти з програми");
-                Console.Write("\n  ➡️ Оберіть розділ (0-2): ");
+                Console.Write("\n➡️  Оберіть розділ (0-2): ");
 
                 string? choice = Console.ReadLine();
                 switch (choice)
@@ -49,8 +49,8 @@ namespace CraftCalc.UI
                 Console.WriteLine("  2. 📋 Переглянути наявні залишки");
                 Console.WriteLine("  3. ✏️  Редагувати матеріал");
                 Console.WriteLine("  4. ❌ Видалити матеріал");
-                Console.WriteLine("  0. ⬅️ На Головне меню");
-                Console.Write("\n  ➡️ Оберіть дію: ");
+                Console.WriteLine("  0. ⬅️  На Головне меню");
+                Console.Write("\n  ➡️  Оберіть дію: ");
 
                 switch (Console.ReadLine())
                 {
@@ -75,8 +75,8 @@ namespace CraftCalc.UI
                 Console.WriteLine("  2. 📋 Переглянути всі вироби та ціни");
                 Console.WriteLine("  3. ✏️  Редагувати існуючий виріб");
                 Console.WriteLine("  4. ❌ Видалити виріб");
-                Console.WriteLine("  0. ⬅️ На Головне меню");
-                Console.Write("\n  ➡️ Оберіть дію: ");
+                Console.WriteLine("  0. ⬅️  На Головне меню");
+                Console.Write("\n  ➡️  Оберіть дію: ");
 
                 switch (Console.ReadLine())
                 {
@@ -108,7 +108,7 @@ namespace CraftCalc.UI
                 string? choice = Console.ReadLine();
                 if (choice == "1") return true;
                 if (choice == "0") return false;
-                Console.Write("  ➡️ Будь ласка, введіть 1 або 0: ");
+                Console.Write("  ➡️  Будь ласка, введіть 1 або 0: ");
             }
         }
         private static string ChooseUnitOfMeasurement()
@@ -123,7 +123,7 @@ namespace CraftCalc.UI
 
             while (true)
             {
-                int choice = InputValidator.ReadValidInt("\n  ➡️ Ваш вибір (1-6): ");
+                int choice = InputValidator.ReadValidInt("\n  ➡️  Ваш вибір (1-6): ");
                 return choice switch
                 {
                     1 => "г",
@@ -131,7 +131,7 @@ namespace CraftCalc.UI
                     3 => "м",
                     4 => "мл",
                     5 => "см",
-                    6 => InputValidator.ReadValidString("  ➡️ Введіть свою одиницю виміру: "),
+                    6 => InputValidator.ReadValidString("  ➡️  Введіть свою одиницю виміру: "),
                     _ => throw new Exception("Неправильний вибір.")
                 };
             }
@@ -143,12 +143,12 @@ namespace CraftCalc.UI
 
             Material newMaterial = new()
             {
-                Name = InputValidator.ReadValidString("  ➡️ Назва (наприклад, Бісер Miyuki Delica): "),
-                PackagingCost = InputValidator.ReadValidDecimal("  ➡️ Вартість цілої упаковки (грн): "),
+                Name = InputValidator.ReadValidString("  ➡️  Назва (наприклад, Бісер Miyuki Delica): "),
+                PackagingCost = InputValidator.ReadValidDecimal("  ➡️  Вартість цілої упаковки (грн): "),
                 UnitOfMeasurement = ChooseUnitOfMeasurement()
             };
 
-            decimal quantity = InputValidator.ReadValidDecimal($"  ➡️ Скільки всього ({newMaterial.UnitOfMeasurement}) у цій упаковці: ");
+            decimal quantity = InputValidator.ReadValidDecimal($"  ➡️  Скільки всього ({newMaterial.UnitOfMeasurement}) у цій упаковці: ");
             newMaterial.TotalQuantity = quantity;
             newMaterial.AvailableQuantity = quantity;
 
@@ -203,10 +203,10 @@ namespace CraftCalc.UI
                 for (int i = 0; i < materials.Count; i++)
                     Console.WriteLine($"  {i + 1}. {materials[i].Name} (Залишок: {materials[i].AvailableQuantity} {materials[i].UnitOfMeasurement})");
 
-                Console.WriteLine("\n  0. ⬅️ Назад");
+                Console.WriteLine("\n  0. ⬅️  Назад");
                 Console.WriteLine("  9. 🏠 На Головне меню");
 
-                int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть номер матеріалу: ");
+                int idx = InputValidator.ReadValidInt("\n  ➡️  Оберіть номер матеріалу: ");
                 if (idx == 0) return;
                 if (idx == 9) { _returnToMainMenu = true; return; }
 
@@ -227,15 +227,15 @@ namespace CraftCalc.UI
                 Console.WriteLine($"  1. Назва: {mat.Name}");
                 Console.WriteLine($"  2. Вартість упаковки: {mat.PackagingCost} грн");
                 Console.WriteLine($"  3. Змінити залишок вручну (Зараз: {mat.AvailableQuantity} {mat.UnitOfMeasurement})");
-                Console.WriteLine("\n  0. ⬅️ Назад до списку матеріалів");
+                Console.WriteLine("\n  0. ⬅️  Назад до списку матеріалів");
                 Console.WriteLine("  9. 🏠 На Головне меню");
 
-                Console.Write("\n  ➡️ Що хочете змінити?: ");
+                Console.Write("\n  ➡️  Що хочете змінити?: ");
 
                 switch (Console.ReadLine())
                 {
                     case "1":
-                        mat.Name = InputValidator.ReadValidString("  ➡️ Нова назва: ");
+                        mat.Name = InputValidator.ReadValidString("  ➡️  Нова назва: ");
                         _context.SaveChanges();
                         break;
                     case "2":
@@ -244,7 +244,7 @@ namespace CraftCalc.UI
                         break;
                     case "3":
                         Console.WriteLine("\n  ⚠️ УВАГА: зміна залишку тут не впливає на вже створені вироби.");
-                        mat.AvailableQuantity = InputValidator.ReadValidDecimal($"  ➡️ Новий залишок ({mat.UnitOfMeasurement}): ");
+                        mat.AvailableQuantity = InputValidator.ReadValidDecimal($"  ➡️  Новий залишок ({mat.UnitOfMeasurement}): ");
                         _context.SaveChanges();
                         break;
                     case "0": return;
@@ -267,10 +267,10 @@ namespace CraftCalc.UI
                 for (int i = 0; i < materials.Count; i++)
                     Console.WriteLine($"  {i + 1}. {materials[i].Name}");
 
-                Console.WriteLine("\n  0. ⬅️ Назад");
+                Console.WriteLine("\n  0. ⬅️  Назад");
                 Console.WriteLine("  9. 🏠 На Головне меню");
 
-                int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть номер для видалення: ");
+                int idx = InputValidator.ReadValidInt("\n  ➡️  Оберіть номер для видалення: ");
                 if (idx == 0) return;
                 if (idx == 9) { _returnToMainMenu = true; return; }
 
@@ -308,11 +308,11 @@ namespace CraftCalc.UI
 
             Product newProduct = new()
             {
-                Name = InputValidator.ReadValidString("  ➡️ Назва виробу: "),
-                TimeSpent = InputValidator.ReadValidDecimal("  ➡️ Витрачено годин на роботу: "),
-                CostOfAnHourOfWork = InputValidator.ReadValidDecimal("  ➡️ Ставка за годину (грн): "),
-                MarkUp = InputValidator.ReadValidDecimal("  ➡️ Фіксована націнка (пакування тощо, грн): "),
-                MarkUpPercentage = InputValidator.ReadValidDecimal("  ➡️ Відсоткова націнка (% маржа): ")
+                Name = InputValidator.ReadValidString("  ➡️  Назва виробу: "),
+                TimeSpent = InputValidator.ReadValidDecimal("  ➡️  Витрачено годин на роботу: "),
+                CostOfAnHourOfWork = InputValidator.ReadValidDecimal("  ➡️  Ставка за годину (грн): "),
+                MarkUp = InputValidator.ReadValidDecimal("  ➡️  Фіксована націнка (пакування тощо, грн): "),
+                MarkUpPercentage = InputValidator.ReadValidDecimal("  ➡️  Відсоткова націнка (% маржа): ")
             };
 
             if (!ConfirmAction("Зберегти основу виробу та перейти до додавання матеріалів?"))
@@ -361,15 +361,15 @@ namespace CraftCalc.UI
                 for (int i = 0; i < availableMats.Count; i++)
                     Console.WriteLine($"  {i + 1}. {availableMats[i].Name} (Є: {availableMats[i].AvailableQuantity} {availableMats[i].UnitOfMeasurement})");
 
-                Console.WriteLine("\n  0. ⬅️ Завершити додавання матеріалів");
+                Console.WriteLine("\n  0. ⬅️  Завершити додавання матеріалів");
 
-                int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть номер матеріалу (або 0 для завершення): ");
+                int idx = InputValidator.ReadValidInt("\n  ➡️  Оберіть номер матеріалу (або 0 для завершення): ");
                 if (idx == 0) return;
 
                 if (idx > 0 && idx <= availableMats.Count)
                 {
                     var mat = availableMats[idx - 1];
-                    decimal qty = InputValidator.ReadValidDecimal($"  ➡️ Скільки витрачено? (Макс {mat.AvailableQuantity} {mat.UnitOfMeasurement}): ");
+                    decimal qty = InputValidator.ReadValidDecimal($"  ➡️  Скільки витрачено? (Макс {mat.AvailableQuantity} {mat.UnitOfMeasurement}): ");
 
                     if (qty <= 0) continue;
 
@@ -456,10 +456,10 @@ namespace CraftCalc.UI
                 for (int i = 0; i < products.Count; i++)
                     Console.WriteLine($"  {i + 1}. {products[i].Name}");
 
-                Console.WriteLine("\n  0. ⬅️ Назад");
+                Console.WriteLine("\n  0. ⬅️  Назад");
                 Console.WriteLine("  9. 🏠 На Головне меню");
 
-                int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть виріб: ");
+                int idx = InputValidator.ReadValidInt("\n  ➡️  Оберіть виріб: ");
                 if (idx == 0) return;
                 if (idx == 9) { _returnToMainMenu = true; return; }
 
@@ -495,18 +495,18 @@ namespace CraftCalc.UI
                 Console.WriteLine($"  6. ➕ Додати новий матеріал");
                 Console.WriteLine($"  7. 🔄 Змінити кількість матеріалу");
                 Console.WriteLine($"  8. ❌ Видалити матеріал з виробу");
-                Console.WriteLine("\n  0. ⬅️ Назад до списку виробів");
+                Console.WriteLine("\n  0. ⬅️  Назад до списку виробів");
                 Console.WriteLine("  9. 🏠 На Головне меню");
 
-                Console.Write("\n  ➡️ Що хочете змінити?: ");
+                Console.Write("\n  ➡️  Що хочете змінити?: ");
 
                 switch (Console.ReadLine())
                 {
-                    case "1": freshProd.Name = InputValidator.ReadValidString("  ➡️ Нова назва: "); _context.SaveChanges(); break;
-                    case "2": freshProd.TimeSpent = InputValidator.ReadValidDecimal("  ➡️ Новий час (год): "); _context.SaveChanges(); break;
-                    case "3": freshProd.CostOfAnHourOfWork = InputValidator.ReadValidDecimal("  ➡️ Нова ставка (грн): "); _context.SaveChanges(); break;
-                    case "4": freshProd.MarkUp = InputValidator.ReadValidDecimal("  ➡️ Нова націнка (грн): "); _context.SaveChanges(); break;
-                    case "5": freshProd.MarkUpPercentage = InputValidator.ReadValidDecimal("  ➡️ Нова націнка (%): "); _context.SaveChanges(); break;
+                    case "1": freshProd.Name = InputValidator.ReadValidString("  ➡️  Нова назва: "); _context.SaveChanges(); break;
+                    case "2": freshProd.TimeSpent = InputValidator.ReadValidDecimal("  ➡️  Новий час (год): "); _context.SaveChanges(); break;
+                    case "3": freshProd.CostOfAnHourOfWork = InputValidator.ReadValidDecimal("  ➡️  Нова ставка (грн): "); _context.SaveChanges(); break;
+                    case "4": freshProd.MarkUp = InputValidator.ReadValidDecimal("  ➡️  Нова націнка (грн): "); _context.SaveChanges(); break;
+                    case "5": freshProd.MarkUpPercentage = InputValidator.ReadValidDecimal("  ➡️  Нова націнка (%): "); _context.SaveChanges(); break;
                     case "6": AddMaterialsToProductLoop(freshProd); break;
                     case "7": EditMaterialQuantityInProduct(freshProd); break;
                     case "8": RemoveMaterialFromProduct(freshProd); break;
@@ -532,7 +532,7 @@ namespace CraftCalc.UI
                 Console.WriteLine($"  {i + 1}. {um.Material?.Name} (Зараз використано: {um.QuantitySpent} {um.Material?.UnitOfMeasurement})");
             }
 
-            int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть номер матеріалу (0 для відміни): ");
+            int idx = InputValidator.ReadValidInt("\n  ➡️  Оберіть номер матеріалу (0 для відміни): ");
             if (idx > 0 && idx <= product.MaterialsUsed.Count)
             {
                 var usedItem = product.MaterialsUsed[idx - 1];
@@ -543,7 +543,7 @@ namespace CraftCalc.UI
                 Console.WriteLine($"  - Вже використано у виробі: {usedItem.QuantitySpent} {dbMaterial.UnitOfMeasurement}");
                 Console.WriteLine($"  - Вільно лежить на складі:  {dbMaterial.AvailableQuantity} {dbMaterial.UnitOfMeasurement}");
 
-                decimal newQty = InputValidator.ReadValidDecimal("\n  ➡️ Введіть НОВУ ЗАГАЛЬНУ кількість для цього виробу: ");
+                decimal newQty = InputValidator.ReadValidDecimal("\n  ➡️  Введіть НОВУ ЗАГАЛЬНУ кількість для цього виробу: ");
 
                 if (newQty == usedItem.QuantitySpent) return;
 
@@ -589,7 +589,7 @@ namespace CraftCalc.UI
                 Console.WriteLine($"  {i + 1}. {um.Material?.Name} ({um.QuantitySpent} {um.Material?.UnitOfMeasurement})");
             }
 
-            int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть номер для видалення (0 для відміни): ");
+            int idx = InputValidator.ReadValidInt("\n  ➡️  Оберіть номер для видалення (0 для відміни): ");
             if (idx > 0 && idx <= product.MaterialsUsed.Count)
             {
                 var usedItem = product.MaterialsUsed[idx - 1];
@@ -620,10 +620,10 @@ namespace CraftCalc.UI
                 for (int i = 0; i < products.Count; i++)
                     Console.WriteLine($"  {i + 1}. {products[i].Name}");
 
-                Console.WriteLine("\n  0. ⬅️ Назад");
+                Console.WriteLine("\n  0. ⬅️  Назад");
                 Console.WriteLine("  9. 🏠 На Головне меню");
 
-                int idx = InputValidator.ReadValidInt("\n  ➡️ Оберіть виріб для видалення: ");
+                int idx = InputValidator.ReadValidInt("\n  ➡️  Оберіть виріб для видалення: ");
                 if (idx == 0) return;
                 if (idx == 9) { _returnToMainMenu = true; return; }
 
